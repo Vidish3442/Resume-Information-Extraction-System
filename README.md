@@ -5,14 +5,22 @@ A lightweight Python tool that converts unstructured PDF and DOCX resumes into s
 ---
 
 ## Features
+- Extracts structured information including:
+  - Full Name
+  - Email Address
+  - Phone Number
+  - Skills
+  - Education
+  - Certifications
+  - Work Experience
+  - LinkedIn Profile
+  - GitHub Profile
 
-- Extracts **name, email, phone, skills, education, certifications, LinkedIn, GitHub, and work experience**
-- Reads **PDF hyperlink annotations** to reliably extract URLs and phone numbers from modern LaTeX-style CVs (where URLs are icons, not plain text)
-- Section-aware extraction for **Experience** and **Certifications** — avoids polluting results with summary paragraphs or skill lists
-- FastAPI REST endpoint (`POST /parse`) for programmatic access
-- Streamlit web UI for drag-and-drop resume parsing
-- Full test suite: 41 unit, property-based (Hypothesis), and integration tests
-
+- Reads PDF hyperlink annotations to reliably extract URLs and phone numbers from modern LaTeX/Overleaf resumes where contact details are embedded as clickable links.
+- Uses section-aware extraction for Experience and Certifications to reduce false positives.
+- Provides a FastAPI REST API (`POST /parse`) for programmatic access.
+- Includes a Streamlit web interface for uploading resumes and viewing extracted information.
+- Includes unit, property-based (Hypothesis), and integration tests.
 ---
 
 ## Project Structure
@@ -43,12 +51,15 @@ resumeaiparser/
 
 ### 1. Prerequisites
 
-This project requires the **Anaconda Python** environment (or any Python 3.11+). All commands below use the full path to the Anaconda interpreter — adjust to your own Python if different.
+- Python 3.11 or 3.12 (recommended)
+- pip
+- spaCy English model (`en_core_web_sm`)
 
+> **Note:** The project was developed and tested using Anaconda Python 3.12, but it also works with a standard Python installation.
 ### 2. Install dependencies
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 3. Download the spaCy model
@@ -56,7 +67,7 @@ C:\Users\<you>\anaconda3\python.exe -m pip install -r requirements.txt
 Required for name extraction via Named Entity Recognition. The system falls back to a title-case heuristic if the model is absent, but accuracy is better with it.
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe -m spacy download en_core_web_sm
+python -m spacy download en_core_web_sm
 ```
 
 ---
@@ -68,21 +79,22 @@ C:\Users\<you>\anaconda3\python.exe -m spacy download en_core_web_sm
 Parse a single resume and print JSON to stdout:
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe app.py sample_resumes/resume.pdf
+python app.py sample_resumes/resume.pdf
 ```
 
 Save to a custom output path:
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe app.py sample_resumes/resume.docx -o results/john_doe.json
+python app.py sample_resumes/resume.docx -o results/john_doe.json
 ```
 
 Output is always written to `output/<stem>.json` by default if `-o` is not specified.
 
-### Option B — Web UI (Streamlit)
+### ### Option B — Web UI (Streamlit)
+
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe -m streamlit run ui.py
+python -m streamlit run ui.py
 ```
 
 Open **http://localhost:8501** in your browser. Upload a PDF or DOCX resume, and the extracted fields are displayed in a structured layout. A **Download JSON** button is provided for saving the result.
@@ -126,14 +138,14 @@ Missing fields appear as `null` (scalars) or `[]` (lists) — never omitted.
 Run the full test suite (41 tests):
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe -m pytest tests/ -v
+python -m pytest tests/ -v
 ```
 
 Run a specific file:
 
 ```bash
-C:\Users\<you>\anaconda3\python.exe -m pytest tests/test_extractor.py -v
-C:\Users\<you>\anaconda3\python.exe -m pytest tests/test_properties.py -v
+python -m pytest tests/test_extractor.py -v
+python -m pytest tests/test_properties.py -v
 ```
 
 ---
@@ -158,6 +170,7 @@ Resume (PDF / DOCX)
         └─ Keyword scan → education (filtered for bullet/cert bleed-through)
   └─► app.py / api.py  → assemble JSON, add metadata, write to disk
 ```
+The system follows a modular processing pipeline where each stage has a single responsibility. This design improves readability, testing, maintainability, and allows individual components to be extended independently.
 
 ### Key design decisions
 
@@ -180,14 +193,13 @@ Certifications appear in their own section in many modern CVs and are semantical
 
 ## Assumptions
 
-- Resumes are **text-based** PDFs or DOCX files — not scanned images.
-- The document is written in **English**.
-- The candidate's name appears in the **first 8 non-empty lines**.
-- LinkedIn and GitHub URLs, if present, follow standard path structures (`/in/<user>`, `/<user>`).
-- Skills are only detected if they appear in `skills.txt`. Add entries freely — one skill per line, `#` for comments.
-- Only the **first** email and phone number are extracted.
-
----
+- Resumes are **text-based** PDF or DOCX documents. Scanned documents and image-based resumes are not supported.
+- The resume is primarily written in **English**.
+- The candidate's name appears within the **first 8 non-empty lines** of the document.
+- Contact information (email, phone number, LinkedIn, GitHub) is typically located near the beginning of the resume.
+- LinkedIn and GitHub profiles, if present, follow standard URL formats (e.g., `/in/<username>` and `github.com/<username>`).
+- Skills are extracted only if they exist in the predefined `skills.txt` dictionary.
+- When multiple email addresses or phone numbers are present, only the **first valid match** is returned.
 
 ## Limitations
 
@@ -202,9 +214,8 @@ Certifications appear in their own section in many modern CVs and are semantical
 
 ## Future Improvements
 
-- OCR support for scanned PDFs via `pytesseract`.
-- Multi-column layout handling via `pdfplumber`'s bounding-box extraction.
-- Confidence scores for each extracted field.
-- Automatic skill dictionary expansion from a curated dataset.
-- Structured education parsing (degree, institution, year as separate fields).
-- Docker packaging for one-command deployment.
+- OCR support for scanned PDFs using `pytesseract`.
+- Improved handling of multi-column resume layouts.
+- Confidence scores for extracted fields.
+- Expansion of the skills dictionary using curated datasets.
+- Structured parsing of education and work experience into separate attributes.
