@@ -1,0 +1,29 @@
+python
+java
+javascript
+typescript
+sql
+html
+css
+react
+node.js
+django
+flask
+fastapi
+pandas
+numpy
+scikit-learn
+machine learning
+deep learning
+nlp
+spacy
+git
+github
+docker
+aws
+azure
+gcp
+linux
+excel
+power bi
+tableau
