@@ -11,6 +11,7 @@ from pathlib import Path
 PYTHON = r"C:\Users\vidis\anaconda3\python.exe"
 CWD = r"d:\Programs\resumeaiparser"
 SAMPLE_RESUME = Path(CWD) / "sample_resumes" / "sample_resume.docx"
+SAMPLE_PDF_RESUME = Path(CWD) / "sample_resumes" / "Vidish_CV.pdf"
 REQUIRED_KEYS = {
     "full_name",
     "email",
@@ -82,6 +83,31 @@ def test_custom_output_flag(tmp_path):
     data = json.loads(custom_output.read_text(encoding="utf-8"))
     missing = REQUIRED_KEYS - set(data.keys())
     assert not missing, f"Output JSON is missing keys: {missing}"
+
+
+def test_cli_uses_pdf_annotations_for_contact_links(tmp_path):
+    """
+    PDF contact links can live in hyperlink annotations instead of visible text.
+    The CLI should extract them the same way the API/Streamlit path does.
+    """
+    custom_output = tmp_path / "vidish.json"
+
+    result = subprocess.run(
+        [PYTHON, "app.py", str(SAMPLE_PDF_RESUME), "-o", str(custom_output)],
+        cwd=CWD,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, (
+        f"Expected exit code 0, got {result.returncode}.\n"
+        f"stderr: {result.stderr}\nstdout: {result.stdout}"
+    )
+
+    data = json.loads(custom_output.read_text(encoding="utf-8"))
+    assert data["phone"] == "+919654403155"
+    assert data["linkedin"] == "https://www.linkedin.com/in/vidishkumar/"
+    assert data["github"] == "https://github.com/Vidish3442"
 
 
 def test_error_exit_for_missing_file():

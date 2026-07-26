@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from extractor import extract_resume_info
-from parser import extract_text_from_file
+from parser import extract_pdf_annotations, extract_text_from_file
 from utils import clean_text
 
 
@@ -50,7 +50,7 @@ def _write_json(data: dict, output_path: Path) -> None:
     with 2-space indentation to output_path.
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def main() -> None:
@@ -67,11 +67,12 @@ def main() -> None:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
+    annotations = extract_pdf_annotations(input_path) if input_path.suffix.lower() == ".pdf" else {}
     text = clean_text(raw_text)
 
     # Sub-task 2.4: pass empty string through rather than short-circuiting;
     # all extractors return None/[] for empty input naturally (Req 12.4).
-    result = extract_resume_info(text if text.strip() else "")
+    result = extract_resume_info(text if text.strip() else "", annotations=annotations)
 
     # Sub-task 2.2: add metadata via helper
     _add_metadata(result, input_path)
@@ -81,7 +82,7 @@ def main() -> None:
     _write_json(result, output_path)
 
     # Print JSON to stdout and confirm save location
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
     print(f"\nSaved to: {output_path}")
 
 

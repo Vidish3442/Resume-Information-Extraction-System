@@ -1,0 +1,28 @@
+{
+  "full_name": "JOHN SMITH\nEmail",
+  "email": "john.smith@email.com",
+  "phone": "+91 9876543210",
+  "skills": [
+    "Fastapi",
+    "Git",
+    "Github",
+    "Python",
+    "Sql"
+  ],
+  "education": [
+    "Bachelor of Technology (B.Tech) in Computer Science",
+    "ABC University"
+  ],
+  "certifications": [],
+  "linkedin": "linkedin.com/in/johnsmith",
+  "github": "github.com/johnsmith",
+  "work_experience": [
+    "PROFESSIONAL EXPERIENCE",
+    "Software Engineer Intern",
+    "XYZ Company"
+  ],
+  "metadata": {
+    "source_file": "sample_resumes\\sample_resume.docx",
+    "file_type": ".docx"
+  }
+}

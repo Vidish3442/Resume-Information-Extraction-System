@@ -1,0 +1,37 @@
+{
+  "full_name": "Vidish Kumar",
+  "email": "vidishkumar890@gmail.com",
+  "phone": "+919654403155",
+  "skills": [
+    "Deep Learning",
+    "Git",
+    "Github",
+    "Machine Learning",
+    "Nlp",
+    "Numpy",
+    "Pandas",
+    "Python",
+    "Sql"
+  ],
+  "education": [
+    "2023 – 2027 Bachelor of Technology (Computer Science and Business Systems)"
+  ],
+  "certifications": [
+    "Design Thinking for Innovation – University of Virginia",
+    "Databases and SQL for Data Science with Python – IBM",
+    "Machine Learning for All – University of London"
+  ],
+  "linkedin": "https://www.linkedin.com/in/vidishkumar/",
+  "github": "https://github.com/Vidish3442",
+  "work_experience": [
+    "Infosys Springboard – Internship 6.0 Dec 2025 – Feb 2026",
+    "Designed and implemented backend modules using Python and SQL for AI-driven financial applications.",
+    "Developed REST API integrations and optimized database workflows for efficient query processing.",
+    "Applied modular software design, debugging, testing, and performance optimization to improve application reliability.",
+    "Collaborated throughout the software development lifecycle by performing debugging, testing, and implementing clean"
+  ],
+  "metadata": {
+    "source_file": "sample_resumes\\Vidish_CV.pdf",
+    "file_type": ".pdf"
+  }
+}

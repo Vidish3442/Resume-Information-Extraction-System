@@ -161,7 +161,7 @@ with st.expander("🔍 View raw JSON output"):
 # Download button
 st.download_button(
     label="⬇️ Download JSON",
-    data=json.dumps(data, indent=2),
+    data=json.dumps(data, indent=2, ensure_ascii=False),
     file_name=f"{uploaded_file.name.rsplit('.', 1)[0]}_parsed.json",
     mime="application/json",
 )

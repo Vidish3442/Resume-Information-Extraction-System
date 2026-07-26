@@ -30,11 +30,6 @@ coverage.xml
 *.lock
 en_core_web_sm/
 
-# ── Output files (generated at runtime, not source) ──────────────────────────
-output/
-
-# ── Sample resumes (may contain personal data) ───────────────────────────────
-sample_resumes/
 
 # ── IDE / editor ─────────────────────────────────────────────────────────────
 .vscode/
