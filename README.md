@@ -20,7 +20,6 @@ A lightweight Python tool that converts unstructured PDF and DOCX resumes into s
 ```
 resumeaiparser/
 ├── app.py              # CLI entry point
-├── api.py              # FastAPI server (POST /parse)
 ├── ui.py               # Streamlit web UI
 ├── parser.py           # Document_Reader — PDF/DOCX text + annotation extraction
 ├── extractor.py        # All extraction logic (regex, spaCy NER, section parsing)
@@ -80,30 +79,13 @@ C:\Users\<you>\anaconda3\python.exe app.py sample_resumes/resume.docx -o results
 
 Output is always written to `output/<stem>.json` by default if `-o` is not specified.
 
-### Option B — Web UI (Streamlit + FastAPI)
-
-Start the API server in one terminal:
-
-```bash
-C:\Users\<you>\anaconda3\python.exe -m uvicorn api:app --reload --port 8000
-```
-
-Start the Streamlit UI in a second terminal:
+### Option B — Web UI (Streamlit)
 
 ```bash
 C:\Users\<you>\anaconda3\python.exe -m streamlit run ui.py
 ```
 
 Open **http://localhost:8501** in your browser. Upload a PDF or DOCX resume, and the extracted fields are displayed in a structured layout. A **Download JSON** button is provided for saving the result.
-
-The FastAPI interactive docs are available at **http://localhost:8000/docs**.
-
-### Option C — API directly
-
-```bash
-curl -X POST http://localhost:8000/parse \
-  -F "file=@sample_resumes/resume.pdf"
-```
 
 ---
 

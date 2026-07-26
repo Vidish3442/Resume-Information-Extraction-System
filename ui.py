@@ -1,33 +1,36 @@
 """
 Streamlit UI for the Resume Information Extraction System.
 
-Talks to the FastAPI backend at http://localhost:8000/parse.
+Runs the extraction pipeline directly — no FastAPI server required.
 
 Run with:
   C:\\Users\\vidis\\anaconda3\\python.exe -m streamlit run ui.py
 """
 
 import json
+import tempfile
+from pathlib import Path
 
-import requests
 import streamlit as st
 
-API_URL = "http://localhost:8000/parse"
+from extractor import extract_resume_info
+from parser import extract_text_from_file, extract_pdf_annotations
+from utils import clean_text
 
-# ── Page config ──────────────────────────────────────────────────────────────
+# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Resume Parser",
     page_icon="📄",
     layout="wide",
 )
 
-# ── Header ────────────────────────────────────────────────────────────────────
+# ── Header ─────────────────────────────────────────────────────────────────────
 st.title("📄 Resume Information Extractor")
 st.caption("Upload a PDF or DOCX resume and instantly extract structured information.")
 
 st.divider()
 
-# ── File upload ───────────────────────────────────────────────────────────────
+# ── File upload ────────────────────────────────────────────────────────────────
 uploaded_file = st.file_uploader(
     "Upload your resume",
     type=["pdf", "docx"],
@@ -38,30 +41,37 @@ if uploaded_file is None:
     st.info("Upload a resume above to get started.")
     st.stop()
 
-# ── Send to API ───────────────────────────────────────────────────────────────
+# ── Run extraction pipeline directly ──────────────────────────────────────────
 with st.spinner("Extracting information…"):
+    suffix = Path(uploaded_file.name).suffix.lower()
+
+    # Write upload to a temp file so pdfplumber / python-docx can open it by path
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(uploaded_file.getvalue())
+        tmp_path = Path(tmp.name)
+
     try:
-        response = requests.post(
-            API_URL,
-            files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
-            timeout=30,
-        )
-    except requests.exceptions.ConnectionError:
-        st.error(
-            "Cannot connect to the API server. "
-            "Make sure it is running:\n\n"
-            "```\nC:\\Users\\vidis\\anaconda3\\python.exe -m uvicorn api:app --reload --port 8000\n```"
-        )
+        raw_text = extract_text_from_file(tmp_path)
+        annotations = extract_pdf_annotations(tmp_path) if suffix == ".pdf" else {}
+    except (FileNotFoundError, ValueError) as exc:
+        tmp_path.unlink(missing_ok=True)
+        st.error(f"Could not read file: {exc}")
+        st.stop()
+    except Exception as exc:
+        tmp_path.unlink(missing_ok=True)
+        st.error(f"Unexpected error reading file: {exc}")
         st.stop()
 
-if response.status_code != 200:
-    detail = response.json().get("detail", response.text)
-    st.error(f"API error ({response.status_code}): {detail}")
-    st.stop()
+    tmp_path.unlink(missing_ok=True)
 
-data = response.json()
+    text = clean_text(raw_text)
+    data = extract_resume_info(text if text.strip() else "", annotations=annotations)
+    data["metadata"] = {
+        "source_file": uploaded_file.name,
+        "file_type": suffix,
+    }
 
-# ── Results layout ────────────────────────────────────────────────────────────
+# ── Results layout ─────────────────────────────────────────────────────────────
 st.success(f"✅ Successfully parsed **{uploaded_file.name}**")
 st.divider()
 
@@ -110,7 +120,6 @@ st.divider()
 st.subheader("🛠️ Skills")
 skills = data.get("skills", [])
 if skills:
-    # Render as pill-style badges using columns
     cols = st.columns(min(len(skills), 6))
     for i, skill in enumerate(skills):
         cols[i % len(cols)].markdown(
